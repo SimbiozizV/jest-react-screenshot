@@ -1,0 +1,11 @@
+.idea
+.vscode
+/node_modules/
+/dist/
+
+# yarn2
+/.yarn/*
+.pnp.*
+!/.yarn/plugins
+!/.yarn/releases
+yarn-error.log
