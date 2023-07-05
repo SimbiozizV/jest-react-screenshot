@@ -1,11 +1,11 @@
-import { ReactNode } from 'react';
+import React, { ReactNode } from 'react';
 import { toMatchImageSnapshot } from 'jest-image-snapshot';
-import { Viewport } from '../intarfaces/ScreenshotRenderer';
 import { ReactComponentServer } from './ComponentServer';
 import { SCREENSHOT_SERVER_URL, getScreenshotPrefix } from '../config';
 import { dirname, join, sep } from 'path';
 import { fetch } from '../network/fetch';
 import callsites from 'callsites';
+import { Viewport } from '../intarfaces/Viewport';
 
 export class JestReactScreenshot {
     private readonly _viewports: {
@@ -13,9 +13,6 @@ export class JestReactScreenshot {
     } = {};
 
     private readonly shots: Record<string, ReactNode> = {};
-
-    private readonly _remoteStylesheetUrls: string[] = [];
-
     private readonly _staticPaths: Record<string, string> = {};
 
     private ran = false;
@@ -32,7 +29,7 @@ export class JestReactScreenshot {
         });
     }
 
-    shoot(shotName: string, component: any) {
+    shoot(shotName: string, component: React.ReactElement) {
         if (this.ran) {
             throw new Error('Cannot add a shot after running.');
         }
@@ -107,7 +104,6 @@ export class JestReactScreenshot {
                                 {
                                     name,
                                     reactNode: shot,
-                                    remoteStylesheetUrls: this._remoteStylesheetUrls,
                                 },
                                 async (port, path) => {
                                     // docker.interval is only available on window and mac

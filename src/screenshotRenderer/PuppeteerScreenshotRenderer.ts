@@ -1,5 +1,6 @@
 import puppeteer, { Browser } from 'puppeteer';
-import { ScreenshotRenderer, Viewport } from '../intarfaces/ScreenshotRenderer';
+import { ScreenshotRenderer } from '../intarfaces/ScreenshotRenderer';
+import { Viewport } from '../intarfaces/Viewport';
 
 export class PuppeteerScreenshotRenderer implements ScreenshotRenderer {
     private browser: Browser | null = null;
@@ -19,8 +20,7 @@ export class PuppeteerScreenshotRenderer implements ScreenshotRenderer {
         }
     }
 
-    async render(name: string, url: string, viewport?: Viewport) {
-        console.log(`render (name = ${name}, url = ${url}).`);
+    async render(url: string, viewport?: Viewport) {
         if (!this.browser) {
             throw new Error('Please call start() once before render().');
         }

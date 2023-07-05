@@ -7,6 +7,7 @@ import * as uuid from 'uuid';
 import { ASSET_SERVING_PREFIX, getAssetFilename } from '../recorded-assets';
 import { readRecordedCss } from '../helpers/recorded-css';
 import { SERVER_STOP_TIMEOUT } from '../config';
+import { Node } from '../intarfaces/Node';
 
 type ServerStyleSheet = import('styled-components').ServerStyleSheet;
 
@@ -30,7 +31,7 @@ export class ReactComponentServer {
     private port: number | null = null;
 
     private readonly nodes: {
-        [id: string]: NodeDescription;
+        [id: string]: Node;
     } = {};
 
     constructor(staticPaths: Record<string, string>) {
@@ -66,7 +67,7 @@ export class ReactComponentServer {
         });
     }
 
-    private renderWithStyledComponents(sheet: ServerStyleSheet, node: NodeDescription) {
+    private renderWithStyledComponents(sheet: ServerStyleSheet, node: Node) {
         console.log(`RENDER WITH STYLED`);
 
         try {
@@ -80,12 +81,6 @@ export class ReactComponentServer {
                         null,
                         charsetMeta,
                         viewportMeta,
-                        ...node.remoteStylesheetUrls.map(url =>
-                            React.createElement('link', {
-                                rel: 'stylesheet',
-                                href: url,
-                            })
-                        ),
                         React.createElement('style', {
                             dangerouslySetInnerHTML: { __html: readRecordedCss() },
                         }),
@@ -102,7 +97,7 @@ export class ReactComponentServer {
         }
     }
 
-    private renderWithoutStyledComponents(node: NodeDescription) {
+    private renderWithoutStyledComponents(node: Node) {
         console.log(`RENDER WITHOUT STYLED`);
 
         return renderToString(
@@ -114,12 +109,6 @@ export class ReactComponentServer {
                     null,
                     charsetMeta,
                     viewportMeta,
-                    ...node.remoteStylesheetUrls.map(url =>
-                        React.createElement('link', {
-                            rel: 'stylesheet',
-                            href: url,
-                        })
-                    ),
                     React.createElement('style', {
                         dangerouslySetInnerHTML: { __html: readRecordedCss() },
                     })
@@ -162,33 +151,16 @@ export class ReactComponentServer {
         });
     }
 
-    async serve<T>(
-        node: NodeDescription,
-        ready: (port: number, path: string) => Promise<T>,
-        id = uuid.v4()
-    ): Promise<T> {
+    async serve<T>(node: Node, ready: (port: number, path: string) => Promise<T>, id = uuid.v4()): Promise<T> {
         console.log(`serve() initiated with node ID: ${id}`);
 
         if (!this.server || !this.port) {
             throw new Error('Server is not running! Please make sure that start() was called.');
         }
-
-        console.log(`Storing node.`);
         this.nodes[id] = node;
-
-        console.log(`Rendering node.`);
         const result = await ready(this.port, `/render/${id}`);
-        console.log(`Node rendered.`);
-
-        console.log(`Deleting node.`);
         delete this.nodes[id];
 
         return result;
     }
-}
-
-export interface NodeDescription {
-    name: string;
-    reactNode: React.ReactNode;
-    remoteStylesheetUrls: string[];
 }

@@ -39,7 +39,9 @@
     "uuid": "^9.0.0"
   },
   "scripts": {
-    "build": "rm -rf dist; tsc"
+    "build": "rm -rf dist; tsc",
+    "lint": "eslint",
+    "lint:all": "yarn lint \"src/**/*.{js,jsx,ts,tsx}\""
   },
   "packageManager": "yarn@3.6.0",
   "devDependencies": {
