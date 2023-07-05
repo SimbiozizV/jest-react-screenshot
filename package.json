@@ -1,6 +1,6 @@
 {
   "name": "jest-react-screenshot",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "author": {
     "name": "Vitaly Galchevsky",
     "email": "simbioziz@gmail.com"
@@ -42,7 +42,7 @@
     "build": "rm -rf dist; tsc",
     "lint": "eslint",
     "lint:all": "yarn lint \"src/**/*.{js,jsx,ts,tsx}\"",
-    "prepublishOnly": "yarn build"
+    "prepare": "yarn build"
   },
   "packageManager": "yarn@3.6.0",
   "devDependencies": {
