@@ -1,7 +1,7 @@
 .idea
 .vscode
-/node_modules/
-/dist/
+node_modules/
+dist/
 
 # yarn2
 /.yarn/*
