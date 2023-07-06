@@ -265,9 +265,9 @@ module.exports = {
             },
         },
         {
-            files: ['src/**/*', '*.test.{js,ts,tsx}'],
+            files: ['src/transform/*'],
             rules: {
-                'import/no-extraneous-dependencies': 'off',
+                '@typescript-eslint/no-var-requires': 'off',
             },
         },
     ],
