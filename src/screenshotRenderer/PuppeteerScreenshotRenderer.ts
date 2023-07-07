@@ -1,10 +1,9 @@
-import puppeteer, { Browser, Page } from 'puppeteer';
+import puppeteer, { Browser } from 'puppeteer';
 import { ScreenshotRenderer } from '../intarfaces/ScreenshotRenderer';
 import { Viewport } from '../intarfaces/Viewport';
 
 export class PuppeteerScreenshotRenderer implements ScreenshotRenderer {
     private browser: Browser | null = null;
-    private page: Page | null = null;
 
     async start() {
         console.log('puppeter start');
@@ -12,14 +11,9 @@ export class PuppeteerScreenshotRenderer implements ScreenshotRenderer {
             args: ['--no-sandbox'],
             headless: 'new',
         });
-
-        if (!this.browser) throw new Error('puppeter browser error');
-        this.page = await this.browser.newPage();
     }
 
     async stop() {
-        if (this.page) await this.page.close();
-
         if (this.browser) {
             console.log('puppeter stop');
             await this.browser.close();
@@ -27,19 +21,23 @@ export class PuppeteerScreenshotRenderer implements ScreenshotRenderer {
     }
 
     async render(url: string, viewport?: Viewport) {
-        if (!this.page) {
-            throw new Error('Empty page. Please call start() once before render().');
+        if (!this.browser) {
+            throw new Error('Please call start() once before render().');
         }
+
+        const page = await this.browser.newPage();
 
         if (viewport) {
-            await this.page.setViewport(viewport);
+            await page.setViewport(viewport);
         }
 
-        await this.page.goto(url);
-        return await this.page.screenshot({
+        await page.goto(url);
+        const screenshot = await page.screenshot({
             encoding: 'binary',
             fullPage: true,
         });
+        await page.close();
+        return screenshot;
     }
 }
 
