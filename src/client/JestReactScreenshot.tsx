@@ -96,37 +96,41 @@ export class JestReactScreenshot {
             for (const [viewportName, viewport] of Object.entries(this._viewports)) {
                 describe(viewportName, () => {
                     for (const [shotName, shot] of Object.entries(this.shots)) {
-                        it(shotName, async () => {
-                            const name = `${this.componentName} - ${viewportName} - ${shotName}`;
+                        it(
+                            shotName,
+                            async () => {
+                                const name = `${this.componentName} - ${viewportName} - ${shotName}`;
 
-                            console.log(`Requesting component server to generate screenshot: ${name}`);
-                            const screenshot = await componentServer.serve(
-                                {
-                                    name,
-                                    reactNode: shot,
-                                },
-                                async (port, path) => {
-                                    // docker.interval is only available on window and mac
-                                    const url = `http://localhost:${port}${path}`;
-                                    return this.requestScreenshot(name, url, viewport);
+                                console.log(`Requesting component server to generate screenshot: ${name}`);
+                                const screenshot = await componentServer.serve(
+                                    {
+                                        name,
+                                        reactNode: shot,
+                                    },
+                                    async (port, path) => {
+                                        // docker.interval is only available on window and mac
+                                        const url = `http://localhost:${port}${path}`;
+                                        return this.requestScreenshot(name, url, viewport);
+                                    }
+                                );
+                                console.log(`Screenshot generated.`);
+
+                                if (screenshot) {
+                                    expect(screenshot).toMatchImageSnapshot({
+                                        customSnapshotsDir: join(
+                                            snapshotsDir,
+                                            '__screenshots__',
+                                            this.componentName,
+                                            subdirectory
+                                        ),
+                                        customSnapshotIdentifier: `${filenamePrefix}${viewportName} - ${shotName}`,
+                                    });
+                                } else {
+                                    console.log(`Skipping screenshot matching.`);
                                 }
-                            );
-                            console.log(`Screenshot generated.`);
-
-                            if (screenshot) {
-                                expect(screenshot).toMatchImageSnapshot({
-                                    customSnapshotsDir: join(
-                                        snapshotsDir,
-                                        '__screenshots__',
-                                        this.componentName,
-                                        subdirectory
-                                    ),
-                                    customSnapshotIdentifier: `${filenamePrefix}${viewportName} - ${shotName}`,
-                                });
-                            } else {
-                                console.log(`Skipping screenshot matching.`);
-                            }
-                        });
+                            },
+                            20000
+                        );
                     }
                 });
             }
