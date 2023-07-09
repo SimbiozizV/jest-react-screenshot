@@ -25,19 +25,24 @@ export class PuppeteerScreenshotRenderer implements ScreenshotRenderer {
             throw new Error('Please call start() once before render().');
         }
 
-        const page = await this.browser.newPage();
+        try {
+            const page = await this.browser.newPage();
 
-        if (viewport) {
-            await page.setViewport(viewport);
+            if (viewport) {
+                await page.setViewport(viewport);
+            }
+
+            await page.goto(url);
+            const screenshot = await page.screenshot({
+                encoding: 'binary',
+                fullPage: true,
+            });
+            await page.close();
+            return screenshot;
+        } catch (e) {
+            console.log(e);
+            throw new Error('Puppeteer problem');
         }
-
-        await page.goto(url);
-        const screenshot = await page.screenshot({
-            encoding: 'binary',
-            fullPage: true,
-        });
-        await page.close();
-        return screenshot;
     }
 }
 

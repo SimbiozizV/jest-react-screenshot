@@ -1,6 +1,6 @@
 import React, { ReactNode } from 'react';
 import { toMatchImageSnapshot } from 'jest-image-snapshot';
-import { ReactComponentServer } from './ComponentServer';
+import { ComponentServer } from './ComponentServer';
 import { SCREENSHOT_SERVER_URL, getScreenshotPrefix } from '../config';
 import { dirname, join, sep } from 'path';
 import { fetch } from '../network/fetch';
@@ -64,7 +64,7 @@ export class JestReactScreenshot {
             throw new Error('Please define shots with .shoot()');
         }
 
-        const componentServer = new ReactComponentServer(this._staticPaths);
+        const componentServer = new ComponentServer(this._staticPaths);
 
         expect.extend({ toMatchImageSnapshot });
 

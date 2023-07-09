@@ -20,10 +20,7 @@ const charsetMeta = React.createElement('meta', {
     content: 'UTF-8',
 });
 
-/**
- * ReactComponentServer renders React nodes in a plain HTML page.
- */
-export class ReactComponentServer {
+export class ComponentServer {
     private readonly app: Express;
 
     private server: Server | null = null;
