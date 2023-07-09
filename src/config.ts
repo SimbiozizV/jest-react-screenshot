@@ -6,4 +6,4 @@ export function getScreenshotPrefix() {
     return process.env.SCREENSHOT_PREFIX || '';
 }
 
-export const SERVER_STOP_TIMEOUT = 3000;
+export const SERVER_STOP_TIMEOUT = 5000;

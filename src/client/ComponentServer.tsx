@@ -8,6 +8,7 @@ import { ASSET_SERVING_PREFIX, getAssetFilename } from '../recorded-assets';
 import { readRecordedCss } from '../helpers/recorded-css';
 import { SERVER_STOP_TIMEOUT } from '../config';
 import { Node } from '../intarfaces/Node';
+import * as process from 'process';
 
 type ServerStyleSheet = import('styled-components').ServerStyleSheet;
 
@@ -138,14 +139,22 @@ export class ComponentServer {
             throw new Error('Server is not running! Please make sure that start() was called.');
         }
 
-        await new Promise<void>((resolve, reject) => {
-            server.close(err => (err ? reject(err) : resolve()));
+        try {
+            server.close(function (err) {
+                if (err) {
+                    console.error('There was an error', err.message);
+                    process.exit(1);
+                } else {
+                    console.log('http server closed successfully. Exiting!');
+                    process.exit(0);
+                }
+            });
 
-            setTimeout(() => {
-                console.log('Http server closed by timeout');
-                resolve();
-            }, SERVER_STOP_TIMEOUT);
-        });
+            setTimeout(() => process.exit(0), SERVER_STOP_TIMEOUT);
+        } catch (err) {
+            console.error('There was an error', (err as Error).message);
+            setTimeout(() => process.exit(1), 500);
+        }
     }
 
     async serve<T>(node: Node, ready: (port: number, path: string) => Promise<T>, id = uuid.v4()): Promise<T> {
