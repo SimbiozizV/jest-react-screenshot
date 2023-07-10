@@ -6,9 +6,8 @@ import { renderToString } from 'react-dom/server';
 import * as uuid from 'uuid';
 import { ASSET_SERVING_PREFIX, getAssetFilename } from '../recorded-assets';
 import { readRecordedCss } from '../helpers/recorded-css';
-import { SERVER_STOP_TIMEOUT } from '../config';
+import { createHttpTerminator, HttpTerminator } from 'http-terminator';
 import { Node } from '../intarfaces/Node';
-import * as process from 'process';
 
 type ServerStyleSheet = import('styled-components').ServerStyleSheet;
 
@@ -23,6 +22,7 @@ const charsetMeta = React.createElement('meta', {
 
 export class ComponentServer {
     private readonly app: Express;
+    private terminator: HttpTerminator | null = null;
 
     private server: Server | null = null;
 
@@ -126,7 +126,9 @@ export class ComponentServer {
 
         console.log(`Attempting to listen on port ${this.port}.`);
         await new Promise<void>(resolve => {
-            this.server = this.app.listen(this.port, resolve);
+            const server = this.app.listen(this.port, resolve);
+            this.server = server;
+            this.terminator = createHttpTerminator({ server });
         });
         console.log(`Successfully listening on port ${this.port}.`);
     }
@@ -134,27 +136,13 @@ export class ComponentServer {
     async stop(): Promise<void> {
         console.log(`stop() initiated.`);
 
-        const { server } = this;
-        if (!server) {
+        const { server, terminator } = this;
+        if (!server || !terminator) {
             throw new Error('Server is not running! Please make sure that start() was called.');
         }
 
-        try {
-            server.close(function (err) {
-                if (err) {
-                    console.error('There was an error', err.message);
-                    process.exit(1);
-                } else {
-                    console.log('http server closed successfully. Exiting!');
-                    process.exit(0);
-                }
-            });
-
-            setTimeout(() => process.exit(0), SERVER_STOP_TIMEOUT);
-        } catch (err) {
-            console.error('There was an error', (err as Error).message);
-            setTimeout(() => process.exit(1), 500);
-        }
+        await terminator.terminate();
+        console.log('http server closed successfully');
     }
 
     async serve<T>(node: Node, ready: (port: number, path: string) => Promise<T>, id = uuid.v4()): Promise<T> {
