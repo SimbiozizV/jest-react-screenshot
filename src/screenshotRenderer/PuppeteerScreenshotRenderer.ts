@@ -32,6 +32,8 @@ export class PuppeteerScreenshotRenderer implements ScreenshotRenderer {
                 await page.setViewport(viewport);
             }
 
+            await page.setDefaultNavigationTimeout(0);
+
             await page.goto(url);
             const screenshot = await page.screenshot({
                 encoding: 'binary',

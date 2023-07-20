@@ -129,7 +129,7 @@ export class JestReactScreenshot {
                                     console.log(`Skipping screenshot matching.`);
                                 }
                             },
-                            20000
+                            50000
                         );
                     }
                 });

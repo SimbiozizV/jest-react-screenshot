@@ -7,7 +7,6 @@ import * as uuid from 'uuid';
 import { ASSET_SERVING_PREFIX, getAssetFilename } from '../recorded-assets';
 import { readRecordedCss } from '../helpers/recorded-css';
 import { Node } from '../intarfaces/Node';
-import { SERVER_STOP_TIMEOUT } from '../config';
 
 type ServerStyleSheet = import('styled-components').ServerStyleSheet;
 
@@ -141,11 +140,6 @@ export class ComponentServer {
 
         await new Promise<void>((resolve, reject) => {
             server.close(err => (err ? reject(err) : resolve()));
-
-            setTimeout(() => {
-                console.log('Http server closed by timeout');
-                resolve();
-            }, SERVER_STOP_TIMEOUT);
         });
     }
 

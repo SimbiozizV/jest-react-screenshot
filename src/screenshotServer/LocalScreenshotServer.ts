@@ -3,13 +3,15 @@ import bodyParser from 'body-parser';
 import { Server } from 'net';
 import { ScreenshotRenderer } from '../intarfaces/ScreenshotRenderer';
 import { ScreenshotServer } from '../intarfaces/ScreenshotServer';
-import { SERVER_STOP_TIMEOUT } from '../config';
 
 export class LocalScreenshotServer implements ScreenshotServer {
     private server: Server | null = null;
     private readonly app: Express;
 
-    constructor(private readonly renderer: ScreenshotRenderer, private readonly port: number) {
+    constructor(
+        private readonly renderer: ScreenshotRenderer,
+        private readonly port: number
+    ) {
         this.app = express();
         this.app.use(bodyParser.json());
         this.app.post('/render', async (req, res) => {
@@ -47,11 +49,6 @@ export class LocalScreenshotServer implements ScreenshotServer {
 
         await new Promise<void>((resolve, reject) => {
             this.server!.close(err => (err ? reject(err) : resolve()));
-
-            setTimeout(() => {
-                console.log('Local srceenshot server closed by timeout');
-                resolve();
-            }, SERVER_STOP_TIMEOUT);
         });
 
         await this.renderer.stop();
