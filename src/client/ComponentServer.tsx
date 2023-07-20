@@ -6,8 +6,8 @@ import { renderToString } from 'react-dom/server';
 import * as uuid from 'uuid';
 import { ASSET_SERVING_PREFIX, getAssetFilename } from '../recorded-assets';
 import { readRecordedCss } from '../helpers/recorded-css';
-import { createHttpTerminator, HttpTerminator } from 'http-terminator';
 import { Node } from '../intarfaces/Node';
+import { SERVER_STOP_TIMEOUT } from '../config';
 
 type ServerStyleSheet = import('styled-components').ServerStyleSheet;
 
@@ -22,7 +22,6 @@ const charsetMeta = React.createElement('meta', {
 
 export class ComponentServer {
     private readonly app: Express;
-    private terminator: HttpTerminator | null = null;
 
     private server: Server | null = null;
 
@@ -128,7 +127,6 @@ export class ComponentServer {
         await new Promise<void>(resolve => {
             const server = this.app.listen(this.port, resolve);
             this.server = server;
-            this.terminator = createHttpTerminator({ server });
         });
         console.log(`Successfully listening on port ${this.port}.`);
     }
@@ -136,13 +134,19 @@ export class ComponentServer {
     async stop(): Promise<void> {
         console.log(`stop() initiated.`);
 
-        const { server, terminator } = this;
-        if (!server || !terminator) {
+        const { server } = this;
+        if (!server) {
             throw new Error('Server is not running! Please make sure that start() was called.');
         }
 
-        await terminator.terminate();
-        console.log('http server closed successfully');
+        await new Promise<void>((resolve, reject) => {
+            server.close(err => (err ? reject(err) : resolve()));
+
+            setTimeout(() => {
+                console.log('Http server closed by timeout');
+                resolve();
+            }, SERVER_STOP_TIMEOUT);
+        });
     }
 
     async serve<T>(node: Node, ready: (port: number, path: string) => Promise<T>, id = uuid.v4()): Promise<T> {
