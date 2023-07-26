@@ -23,7 +23,7 @@ async function setUpScreenshotServer() {
     try {
         await screenshotServer.start();
     } catch (e) {
-        console.log('WOW ERROR WOW');
+        console.log(e);
     }
 }
 
