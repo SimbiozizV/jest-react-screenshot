@@ -8,7 +8,7 @@ export class PuppeteerScreenshotRenderer implements ScreenshotRenderer {
     async start() {
         console.log('puppeter start');
         this.browser = await puppeteer.launch({
-            args: ['--no-sandbox'],
+            args: ['--no-sandbox', '--disable-setuid-sandbox'],
             headless: 'new',
         });
     }
